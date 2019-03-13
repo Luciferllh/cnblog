@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>login</title>
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'bootstrap/css/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'fontAwesome/css/font-awesome.min.css' %}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        .container{
+            margin-top: 150px;
+        }
+        #avatar{
+            display: none;
+        }
+        .avatar{
+            margin-left: 20px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="row">
+        <div class="col-md-6 col-md-offset-3">
+            <form action="">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    <label for="id_{{ field.name }}">{{ field.label }}</label>
+                     <div>{{field}}</div><span class="error"></span>
+                </div>
+                {% endfor %}
+                <div class="form-group">
+                    <label for="avatar">头像<img src="{% static 'img/default.jpg' %}" alt="" height="40px" width="40px" class="avatar"></label>
+                    <input type="file" id="avatar">
+                </div>
+
+                <input type="button" class="btn btn-default reg_btn" value="提交">
+                <span class="errors"></span>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="{% static 'JS/jquery-3.3.1.js' %}"></script>
+<script src="{% static 'bootstrap/js/bootstrap.min.js' %}"></script>
+<script>
+    $('#avatar').on('change',function () {
+        var choose_file=$(this)[0].files[0];
+        var reader=new FileReader();
+        reader.readAsDataURL(choose_file);
+        reader.onload= function(){
+            $('.avatar').attr('src',reader.result)
+        }
+
+    });
+
+    $('.reg_btn').on('click',function () {
+        var formData = new FormData();
+        formData.append('user',$('#id_user').val());
+        formData.append('pwd',$('#id_pwd').val());
+        formData.append('repeat_pwd',$('#id_repeat_pwd').val());
+        formData.append('email',$('#id_email').val());
+        formData.append('avatar',$('#avatar')[0].files[0]);
+        formData.append('csrfmiddlewaretoken',$("[name='csrfmiddlewaretoken']").val());
+        $.ajax({
+            url:'',
+            type:'post',
+            processData:false,
+            contentType:false,
+            data:formData,
+            success:function (data) {
+                if (data.user){
+                location.href='/login/'}
+                else {
+                   console.log(data.error_dict)
+                    $('form span').html('')
+                    $('form .form-group').removeClass('has-error')
+                    $.each(data.error_dict,function (field,error_list) {
+                        $('#id_'+field).parent().next().html(error_list[0]).css('color','red')
+                        $('#id_'+field).parent().parent().addClass('has-error')
+
+                    })
+                }
+            }
+        })
+    })
+</script>
+</body>
+</html>
